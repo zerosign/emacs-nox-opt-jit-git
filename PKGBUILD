@@ -1,11 +1,11 @@
 pkgname="emacs-nox-opt-jit-git"
-pkgver=28.0.50.148111
+pkgver=28.0.50.148261
 pkgrel=1
 pkgdesc="GNU Emacs. Development native-comp branch & cli only"
 arch=('x86_64')
 ur="https://www.gnu.org/software/emacs/"
 license=('GPL3')
-depends=('jansson' 'libotf' 'libgccjit' 'gpm' 'dbus' 'gnutls')
+depends=('jansson' 'libotf' 'libgccjit' 'gpm' 'dbus' 'gnutls' 'libxml2' 'ncurses')
 makedepends=('git' 'clang' 'lld' 'llvm' 'polly')
 provides=('emacs' 'emacs-seq')
 conflicts=('emacs' 'emacs26-git' 'emacs-27-git' 'emacs-git' 'emacs-seq')
@@ -42,9 +42,13 @@ package() {
 
     make DESTDIR="$pkgdir/" install
 
-    mv "$pkgdir"/usr/bin/{ctags,ctags.emacs}
+    # remove conflict with ctags package
+    mv "${pkgdir}"/usr/bin/{ctags,ctags.emacs}
+    mv "${pkgdir}"/usr/share/man/man1/{ctags.1.gz,ctags.emacs.1}
 
-    find "$pkgdir"/usr/share/emacs/ | xargs chown root:root
-    rm -rf "$pkgdir"/var/games
-    rm -rf "$pkgdir"/usr/share/man/man1/ctags.1.gz
+    # fix user/root permissions on usr/share files
+    find "${pkgdir}"/usr/share/emacs/$pkgver -exec chown root.root {} \;
+
+    # remove .desktop file and icons
+    rm -rf "${pkgdir}"/usr/share/{applications,icons}
 }
