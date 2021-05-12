@@ -1,5 +1,5 @@
 pkgname="emacs-nox-opt-jit-git"
-pkgver=28.0.50.148261
+pkgver=28.0.50.148280
 pkgrel=1
 pkgdesc="GNU Emacs. Development native-comp branch & cli only"
 arch=('x86_64')
@@ -32,7 +32,7 @@ prepare() {
 build() {
     cd "$srcdir/emacs-git"
 
-    CC="/usr/bin/clang" CXX="/usr/bin/clang++" CFLAGS="-march=native -O3 -pipe -fno-plt -flto -Xclang -load -Xclang /usr/lib/LLVMPolly.so -mllvm -polly" CXXFLAGS="$CFLAGS" LD="/usr/bin/lld" AR="/usr/bin/llvm-ar" AS="/usr/bin/llvm-as" ./configure --prefix=/usr --sysconfdir=/etc --libexecdir=/usr/lib --localstatedir=/var --with-file-notification=inotify --mandir=/usr/share/man --with-modules --enable-link-time-optimization --without-x --without-sound --with-json --with-dbus --without-gsettings --without-selinux --without-gnutls --with-native-compilation --without-mailutils --without-pop --without-kerberos --without-kerberos5 --without-hesiod --without-mail-unlink --without-compress-install --without-toolkit-scroll-bars
+    CC="/usr/bin/clang" CXX="/usr/bin/clang++" CFLAGS="-march=native -O3 -pipe -fno-plt -Xclang -load -Xclang /usr/lib/LLVMPolly.so -Wl -mllvm -threads=1 -mllvm -polly -fuse-ld=lld -flto -fuse-linker-plugin" CXXFLAGS="$CFLAGS" LD="/usr/bin/lld" AR="/usr/bin/llvm-ar" AS="/usr/bin/llvm-as" ./configure --prefix=/usr --sysconfdir=/etc --libexecdir=/usr/lib --localstatedir=/var --with-file-notification=inotify --mandir=/usr/share/man --with-modules --enable-link-time-optimization --without-x --without-sound --with-json --with-dbus --without-gsettings --without-selinux --without-gnutls --with-native-compilation --without-mailutils --without-pop --without-kerberos --without-kerberos5 --without-hesiod --without-mail-unlink --without-compress-install --without-toolkit-scroll-bars --program-transform-name=s/\([ec]tags\)/\1.emacs/
 
     make NATIVE_FULL_AOT=1
 }
@@ -43,11 +43,13 @@ package() {
     make DESTDIR="$pkgdir/" install
 
     # remove conflict with ctags package
-    mv "${pkgdir}"/usr/bin/{ctags,ctags.emacs}
-    mv "${pkgdir}"/usr/share/man/man1/{ctags.1.gz,ctags.emacs.1}
+    # mv "${pkgdir}"/usr/bin/{ctags,ctags.emacs}
+
+    rm -rf "${pkgdir}"/var/games
+    rm -rf "${pkgdir}"/usr/share/man/man1/ctags.1.gz
 
     # fix user/root permissions on usr/share files
-    find "${pkgdir}"/usr/share/emacs/$pkgver -exec chown root.root {} \;
+    find "$pkgdir"/usr/share/emacs/ | xargs chown root:root
 
     # remove .desktop file and icons
     rm -rf "${pkgdir}"/usr/share/{applications,icons}
