@@ -1,12 +1,12 @@
 pkgname="emacs-nox-opt-jit-git"
-pkgver=28.0.50.148280
+pkgver=28.0.50.148290
 pkgrel=1
 pkgdesc="GNU Emacs. Development native-comp branch & cli only"
 arch=('x86_64')
 ur="https://www.gnu.org/software/emacs/"
 license=('GPL3')
-depends=('jansson' 'libotf' 'libgccjit' 'gpm' 'dbus' 'gnutls' 'libxml2' 'ncurses')
-makedepends=('git' 'clang' 'lld' 'llvm' 'polly')
+depends=('jansson' 'libotf' 'libgccjit' 'gpm' 'dbus' 'gnutls' 'libxml2' 'ncurses' 'mimalloc-git')
+makedepends=('git' 'clang' 'lld' 'llvm' 'polly' 'mimalloc-git')
 provides=('emacs' 'emacs-seq')
 conflicts=('emacs' 'emacs26-git' 'emacs-27-git' 'emacs-git' 'emacs-seq')
 replaces=('emacs' 'emacs26-git' 'emacs-27-git' 'emacs-git' 'emacs-seq')
@@ -32,7 +32,7 @@ prepare() {
 build() {
     cd "$srcdir/emacs-git"
 
-    CC="/usr/bin/clang" CXX="/usr/bin/clang++" CFLAGS="-march=native -O3 -pipe -fno-plt -Xclang -load -Xclang /usr/lib/LLVMPolly.so -Wl -mllvm -threads=1 -mllvm -polly -fuse-ld=lld -flto -fuse-linker-plugin" CXXFLAGS="$CFLAGS" LD="/usr/bin/lld" AR="/usr/bin/llvm-ar" AS="/usr/bin/llvm-as" ./configure --prefix=/usr --sysconfdir=/etc --libexecdir=/usr/lib --localstatedir=/var --with-file-notification=inotify --mandir=/usr/share/man --with-modules --enable-link-time-optimization --without-x --without-sound --with-json --with-dbus --without-gsettings --without-selinux --without-gnutls --with-native-compilation --without-mailutils --without-pop --without-kerberos --without-kerberos5 --without-hesiod --without-mail-unlink --without-compress-install --without-toolkit-scroll-bars --program-transform-name=s/\([ec]tags\)/\1.emacs/
+    CC="/usr/bin/clang" CXX="/usr/bin/clang++" CFLAGS="-march=native -O3 -pipe -fno-plt -Xclang -load -Xclang /usr/lib/LLVMPolly.so -Wl -mllvm -threads=1 -mllvm -polly -fuse-ld=lld -flto -fuse-linker-plugin -L/usr/lib/mimalloc-1.7/mimalloc.o" CXXFLAGS="$CFLAGS" LD="/usr/bin/lld" AR="/usr/bin/llvm-ar" AS="/usr/bin/llvm-as" ./configure --prefix=/usr --sysconfdir=/etc --libexecdir=/usr/lib --localstatedir=/var --with-file-notification=inotify --mandir=/usr/share/man --with-modules --enable-link-time-optimization --without-x --without-sound --with-json --with-dbus --without-gsettings --without-selinux --without-gnutls --with-native-compilation --without-mailutils --without-pop --without-kerberos --without-kerberos5 --without-hesiod --without-mail-unlink --without-compress-install --without-toolkit-scroll-bars --program-transform-name=s/\([ec]tags\)/\1.emacs/
 
     make NATIVE_FULL_AOT=1
 }
